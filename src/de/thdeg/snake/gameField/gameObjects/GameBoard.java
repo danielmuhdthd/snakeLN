@@ -1,10 +1,13 @@
 package de.thdeg.snake.gameField.gameObjects;
 
+import de.thdeg.snake.gameField.UiFieldTranslator;
 import de.thdeg.snake.gameField.fieldObjects.CollisionType;
 import de.thdeg.snake.gameField.fieldObjects.FieldTile;
+import de.thdeg.snake.highScore.HighscoreIO;
 import de.thdeg.snake.keyboardWrapper.Direction;
 import de.thdeg.snake.runtime.InternalLedGameThread;
 
+import javax.swing.*;
 import javax.swing.Timer;
 import java.awt.event.*;
 import java.util.*;
@@ -14,11 +17,30 @@ public class GameBoard implements ActionListener {
     private FieldTile[][] gameField;
     private Snake snake;
     private final Timer timer;
+    private int score = 0;
+    private final String[] difficulties = {"Easy", "Medium", "Hard", "Hardcore"};
+    private final HighscoreIO highScoreRefresher = new HighscoreIO();
+    private final UiFieldTranslator translator = new UiFieldTranslator();
+    private boolean runningFirstTime = true;
+
+    private int userDifficulty = 1;
 
     public GameBoard(){
         initializeField();
-        timer = new Timer(500, this);
-        timer.start();
+        timer = new Timer(10, this);
+        initializeGame();
+    }
+
+    private void initializeGame(){
+        userDifficulty = JOptionPane.showOptionDialog(null, "Returns the position of your choice on the array",
+                "Click a button",
+                JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, difficulties, difficulties[userDifficulty]);
+        initializeGameObjects();
+        timer.setDelay(mapMillisecondsToDifficulty());
+
+        Countdown countdown = new Countdown(2, 2, gameField, translator, timer);
+        translator.translateToShortArray(gameField);
+        countdown.doCountdown();
     }
 
     private void initializeField() {
@@ -27,20 +49,34 @@ public class GameBoard implements ActionListener {
             gameField[i] = new FieldTile[48];
             for (byte j = 0; j < gameField[0].length; ++j) {
                 if(i == 0 || j == 0 || i == gameField.length-1 || j == gameField[0].length-1){
-                    gameField[i][j] = new FieldTile(CollisionType.border, j, i);
+                    gameField[i][j] = new FieldTile(CollisionType.death, j, i);
                 }else{
                     gameField[i][j] = new FieldTile(CollisionType.nothing, j, i);
                 }
             }
         }
-        snake = new Snake(new ArrayList<>(Arrays.asList(gameField[10]).subList(5, 10)));
-        placeFood();
-        InternalLedGameThread.showImage(translateToShortArray());
     }
 
+    private void initializeGameObjects() {
+        snake = new Snake(new ArrayList<>(Arrays.asList(gameField[10]).subList(5, 10)));
+        translator.translateToShortArray(gameField);
+    }
+
+    private int mapMillisecondsToDifficulty() {
+        return switch(userDifficulty){
+            case 0 -> 200;
+            case 2 -> 100;
+            case 3 -> 50;
+            default -> 150;
+        };
+    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        if(runningFirstTime){
+            placeFood();
+            runningFirstTime = false;
+        }
         processKeyboardInput();
         switch (snake.getFacing()) {
             case up -> calculateNextTile((byte) -1, (byte) 0);
@@ -48,7 +84,7 @@ public class GameBoard implements ActionListener {
             case left -> calculateNextTile((byte) 0, (byte) -1);
             case right -> calculateNextTile((byte) 0, (byte) 1);
         }
-        InternalLedGameThread.showImage(translateToShortArray());
+        translator.translateToShortArray(gameField);
     }
 
     private void processKeyboardInput() {
@@ -60,28 +96,44 @@ public class GameBoard implements ActionListener {
         }
     }
 
-    public void calculateNextTile(byte relY, byte relX){
+    private void calculateNextTile(byte relY, byte relX){
         byte nextTilePosX = (byte)(snake.getHead().getPosX()+relX), nextTilePosY = (byte)(snake.getHead().getPosY()+relY);
         FieldTile nextTile = gameField[nextTilePosY][nextTilePosX];
         switch(nextTile.getCollision()){
-            case snake, border -> gameOver();
+            case death -> gameOver();
             case food -> {
                 snake.eat(nextTile);
                 placeFood();
+                ++score;
+                System.out.println(score);
             }
-            case nothing -> snake.move(nextTile);
+            default -> snake.move(nextTile);
         }
     }
 
-    public void gameOver(){
-        //timer.stop();
+    private void gameOver(){
+        timer.stop();
+        System.out.println("-----------------------");
+        JOptionPane.showMessageDialog(null, "Game Over");
+        JOptionPane.showMessageDialog(null,highScoreRefresher.refreshHighscore(difficulties[userDifficulty],score));
+        int x = JOptionPane.showConfirmDialog(null, "Do you want to restart?",
+                "",
+                 JOptionPane.YES_NO_OPTION);
+        if (x == JOptionPane.YES_OPTION) {
+            restart();
+        } else if (x == JOptionPane.NO_OPTION) {
+            System.exit(0);
+        }
     }
 
-    public void restart(){
-
+    private void restart(){
+        initializeField();
+        score = 0;
+        runningFirstTime = true;
+        initializeGame();
     }
 
-    public void placeFood(){
+    private void placeFood(){
         Random rand = new Random();
         int xFood = 1+rand.nextInt( gameField[0].length-3);
         int yFood = 1+rand.nextInt( gameField.length-3);
@@ -90,19 +142,5 @@ public class GameBoard implements ActionListener {
             yFood = 1+rand.nextInt( gameField.length-3);
         }
         gameField[yFood][xFood].change(CollisionType.food);
-    }
-
-    public short[] translateToShortArray(){
-        short[] ret = new short[24*48*3];
-        int retCount = 0;
-        for (FieldTile[] fieldTiles : gameField) {
-            for (int j = 0; j < gameField[0].length; ++j) {
-                ret[retCount] = fieldTiles[j].getColor().getRed();
-                ret[retCount + 1] = fieldTiles[j].getColor().getGreen();
-                ret[retCount + 2] = fieldTiles[j].getColor().getBlue();
-                retCount += 3;
-            }
-        }
-        return ret;
     }
 }

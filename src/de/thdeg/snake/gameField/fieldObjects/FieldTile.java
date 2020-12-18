@@ -1,6 +1,7 @@
 package de.thdeg.snake.gameField.fieldObjects;
 
 public class FieldTile {
+
     private CollisionType collision;
     private Color color;
     private final byte posX, posY;
@@ -18,6 +19,10 @@ public class FieldTile {
 
     public Color getColor() {
         return color;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
     }
 
     public CollisionType getCollision() {

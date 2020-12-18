@@ -1,6 +1,7 @@
 package de.thdeg.snake.gameField.gameObjects;
 
 import de.thdeg.snake.gameField.fieldObjects.CollisionType;
+import de.thdeg.snake.gameField.fieldObjects.Color;
 import de.thdeg.snake.gameField.fieldObjects.FieldTile;
 import de.thdeg.snake.keyboardWrapper.Direction;
 
@@ -15,7 +16,10 @@ public class Snake {
     public Snake(List<FieldTile> snakeTiles){
         this.snakeTiles = snakeTiles;
         //sets the snake on the surface
-        IntStream.range(0, snakeTiles.size()).forEach(i -> snakeTiles.get(i).change(CollisionType.snake));
+        IntStream.range(0, snakeTiles.size()).forEach(i -> {
+            snakeTiles.get(i).change(CollisionType.death);
+            snakeTiles.get(i).setColor(new Color((short)0, (short)200, (short)0));
+        });
     }
 
     public void move(FieldTile nextTile){
@@ -30,7 +34,8 @@ public class Snake {
 
     @SuppressWarnings("SpellCheckingInspection")
     private void snakeifyTile(FieldTile tile){
-        tile.change(CollisionType.snake);
+        tile.change(CollisionType.death);
+        tile.setColor(new Color((short)0, (short)200, (short)0));
         snakeTiles.add(tile);
     }
 
