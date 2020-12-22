@@ -1,54 +1,72 @@
 package de.thdeg.snake.gameField.gameObjects;
 
-import de.thdeg.snake.gameField.fieldObjects.CollisionType;
-import de.thdeg.snake.gameField.fieldObjects.Color;
-import de.thdeg.snake.gameField.fieldObjects.FieldTile;
+import de.thdeg.snake.gameField.fieldObjects.FieldTileBase;
+import de.thdeg.snake.gameField.fieldObjects.fieldTiles.*;
 import de.thdeg.snake.keyboardWrapper.Direction;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.IntStream;
 
+/**
+ * Class, which manages the snake and its tiles
+ */
 public class Snake {
 
-    private final List<FieldTile> snakeTiles;
+    /** The tiles of the snake */
+    private final List<DeathTile> snakeTiles = new ArrayList<>();
+
+    /** The direction, in which the snake is currently facing */
     private Direction facing = Direction.right;
 
-    public Snake(List<FieldTile> snakeTiles){
-        this.snakeTiles = snakeTiles;
-        //sets the snake on the surface
-        IntStream.range(0, snakeTiles.size()).forEach(i -> {
-            snakeTiles.get(i).change(CollisionType.death);
-            snakeTiles.get(i).setColor(new Color((short)0, (short)200, (short)0));
-        });
+
+    /**
+     * Initializes a new snake with the given tiles
+     * @param snakeTiles tiles of the snake of which it is initialized (already needed to be converted in a DeathTile)
+     */
+    public Snake(List<DeathTile> snakeTiles){
+        this.snakeTiles.addAll(snakeTiles);
     }
 
-    public void move(FieldTile nextTile){
-        snakeifyTile(nextTile);
-        FieldTile removed = snakeTiles.remove(0);
-        removed.change(CollisionType.nothing);
+    /**
+     * Snakes moves one tile
+     * @param nextTile Tile the snake moves to (already needs to be converted in a DeathTile)
+     */
+    public BackgroundTile move(DeathTile nextTile){
+        snakeTiles.add(nextTile);
+        DeathTile removed = snakeTiles.remove(0);
+        return removed.changeToBackgroundTile();
     }
 
-    public void eat(FieldTile foodTile){
-        snakeifyTile(foodTile);
+    /**
+     * Lets the snake eat the given tile, which already needs to be converted in a DeathTile
+     * @param nextTile Tile, which the snake eats (already needs to be converted in a DeathTile)
+     */
+    public void eat(DeathTile nextTile){
+        snakeTiles.add(nextTile);
     }
 
-    @SuppressWarnings("SpellCheckingInspection")
-    private void snakeifyTile(FieldTile tile){
-        tile.change(CollisionType.death);
-        tile.setColor(new Color((short)0, (short)200, (short)0));
-        snakeTiles.add(tile);
-    }
-
+    /**
+     * Gets the facing of the snake
+     * @return returns the facing of the snake
+     */
     public Direction getFacing() {
         return facing;
     }
 
-    public FieldTile getHead(){
+    /**
+     * Gets the head of the snake
+     * @return returns the head tile of the snake
+     */
+    public FieldTileBase getHead(){
         return snakeTiles.get(snakeTiles.size()-1);
     }
 
+    /**
+     * Sets the facing of the snake (does nothing, if the facing is set to the opposite direction)
+     * @param facing facing the snake is set to
+     */
     public void setFacing(Direction facing) {
-        if(this.facing == facing.oppositeDirection()){
+        if(facing == null || this.facing == facing.oppositeDirection()){
             return;
         }
         this.facing = facing;

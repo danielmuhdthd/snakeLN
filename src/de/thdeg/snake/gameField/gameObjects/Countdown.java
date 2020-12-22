@@ -7,15 +7,33 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/**
+ * Manages the countdown in the beginning of the game
+ */
 public class Countdown implements ActionListener {
+
+    /** The countdown can be set to a specific absolute screen position, although is always centered around "BEGIN IN..." */
     private final int absPosX, absPosY;
-    private final FieldTile[][] gameField;
+    /** The gameField the countdown is printed on */
+    private final FieldTileBase[][] gameField;
+    /** Used to translate a FieldTile[][] to an displayable short array and displays it */
     private final UiFieldTranslator translator;
+    /** Used to determine the stage of the countdown */
     private int stage = 0;
+    /** Timer, which times the countdown */
     private final Timer timer = new Timer(1000, this), gameBoardTimer;
+    /** Color of the countdown */
     private final Color countDownColor = new Color((short)0, (short)0, (short)0);
 
-    public Countdown(int x, int y, FieldTile[][] gameField, UiFieldTranslator translator, Timer gameBoardTimer){
+    /**
+     * Initializes the countdown
+     * @param x x position on which the countdown will be placed
+     * @param y x position on which the countdown will be placed
+     * @param gameField gameField on which the countdown will be placed
+     * @param translator Used to translate a FieldTile[][] to an displayable short array and displays it
+     * @param gameBoardTimer Timer of the gameBoard, which is started at the end of the countdown
+     */
+    public Countdown(int x, int y, FieldTileBase[][] gameField, UiFieldTranslator translator, Timer gameBoardTimer){
         this.gameBoardTimer = gameBoardTimer;
         this.translator = translator;
         absPosX = x;
@@ -24,10 +42,15 @@ public class Countdown implements ActionListener {
         firstStage(countDownColor);
     }
 
+    /** Starts the countdown */
     public void doCountdown() {
         timer.start();
     }
 
+    /**
+     * Method which is called periodically by the timer
+     * @param e ignored
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         switch(stage){
@@ -57,8 +80,11 @@ public class Countdown implements ActionListener {
         }
     }
 
-    
 
+    /**
+     * Prints "BEGIN IN..."
+     * @param color color of the displayed text
+     */
     private void firstStage(Color color){
         gameField[absPosY+0][absPosX+0].setColor(color);
         gameField[absPosY+0][absPosX+1].setColor(color);
@@ -135,6 +161,10 @@ public class Countdown implements ActionListener {
         translator.translateToShortArray(gameField);
     }
 
+    /**
+     * Prints "3..."
+     * @param color color of the displayed text
+     */
     private void secondStage(Color color){
         gameField[absPosY+0][absPosX+13].setColor(color);
         gameField[absPosY+0][absPosX+14].setColor(color);
@@ -153,6 +183,10 @@ public class Countdown implements ActionListener {
         translator.translateToShortArray(gameField);
     }
 
+    /**
+     * Prints "2..."
+     * @param color color of the displayed text
+     */
     private void thirdStage(Color color){
         gameField[absPosY+0][absPosX+13].setColor(color);
         gameField[absPosY+0][absPosX+14].setColor(color);
@@ -171,6 +205,10 @@ public class Countdown implements ActionListener {
         translator.translateToShortArray(gameField);
     }
 
+    /**
+     * Prints "1..."
+     * @param color color of the displayed text
+     */
     private void forthStage(Color color){
         gameField[absPosY+0][absPosX+15].setColor(color);
         gameField[absPosY+1][absPosX+14].setColor(color);
@@ -184,6 +222,10 @@ public class Countdown implements ActionListener {
         translator.translateToShortArray(gameField);
     }
 
+    /**
+     * Prints "GO!"
+     * @param color color of the displayed text
+     */
     private void fifthStage(Color color){
         gameField[absPosY+0][absPosX+13].setColor(color);
         gameField[absPosY+0][absPosX+14].setColor(color);
