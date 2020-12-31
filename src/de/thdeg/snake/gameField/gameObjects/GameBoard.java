@@ -45,6 +45,9 @@ public class GameBoard implements ActionListener {
     /** User chosen difficulty encoded as a number */
     private int userDifficulty = 1;
 
+    /** Changed Tiles in the current tick */
+    private final List<FieldTileBase> changedTiles = new ArrayList<>();
+
     /** Initializes a new GameBoard object */
     public GameBoard(){
         initializeField();
@@ -88,7 +91,7 @@ public class GameBoard implements ActionListener {
             snakeTiles.add(deathTile);
         }
         snake = new Snake(snakeTiles);
-        translator.translateToShortArray(gameField);
+        translator.translateGameFieldToShortArray(gameField);
     }
 
     /**
@@ -97,6 +100,7 @@ public class GameBoard implements ActionListener {
      */
     @Override
     public void actionPerformed(ActionEvent e) {
+        changedTiles.clear();
         if(runningFirstTime){
             placeFood();
             runningFirstTime = false;
@@ -109,7 +113,7 @@ public class GameBoard implements ActionListener {
             case left -> calculateNextTile((byte) 0, (byte) -1);
             case right -> calculateNextTile((byte) 0, (byte) 1);
         }
-        translator.translateToShortArray(gameField);
+        translator.translateChanges(changedTiles);
     }
 
 
@@ -126,33 +130,22 @@ public class GameBoard implements ActionListener {
      */
     private void calculateNextTile(byte relY, byte relX){
         byte nextTilePosX = (byte)(snake.getHead().getPosX()+relX), nextTilePosY = (byte)(snake.getHead().getPosY()+relY);
+        DeathTile newSnakeTile = gameField[nextTilePosY][nextTilePosX].changeToDeathTile(true);
         switch(gameField[nextTilePosY][nextTilePosX].getCollision()){
-            case death -> gameOver();
+            case death -> {
+                gameOver();
+                return;
+            }
             case food -> {
-                DeathTile newSnakeTile = manageDeathTileReference(nextTilePosX, gameField[nextTilePosY]);
                 snake.eat(newSnakeTile);
                 placeFood();
                 ++score;
                 System.out.println(score);
             }
-            default -> {
-                DeathTile newSnakeTile = manageDeathTileReference(nextTilePosX, gameField[nextTilePosY]);
-                BackgroundTile removed = snake.move(newSnakeTile);
-                gameField[removed.getPosY()][removed.getPosX()] = removed;
-            }
-        }
-    }
+            default -> changeTile(snake.move(newSnakeTile));
 
-    /**
-     * Used as a helper method for duplicated reference managing in calculateNextTile(...)
-     * @param nextTilePosX absolute x position of the next calculated tile
-     * @param fieldTileBases Row of gameField array, in which the next tile lies
-     * @return returns the next tile converted to an DeathTile
-     */
-    private DeathTile manageDeathTileReference(byte nextTilePosX, FieldTileBase[] fieldTileBases) {
-        DeathTile newSnakeTile = fieldTileBases[nextTilePosX].changeToDeathTile(true);
-        fieldTileBases[nextTilePosX] = newSnakeTile;
-        return newSnakeTile;
+        }
+        changeTile(newSnakeTile);
     }
 
     /** Handles GameOver */
@@ -163,7 +156,7 @@ public class GameBoard implements ActionListener {
         String prettyPrintedScores = highScoreRefresher.refreshHighscore(difficulties[userDifficulty],score);
         System.out.println(prettyPrintedScores);
         System.out.println("-----------------------");
-        JOptionPane.showMessageDialog(null,prettyPrintedScores);
+        JOptionPane.showMessageDialog(null,prettyPrintedScores.replace("10: ", "10:"));
         int x = JOptionPane.showConfirmDialog(null, "Do you want to restart?",
                 "",
                  JOptionPane.YES_NO_OPTION);
@@ -191,7 +184,12 @@ public class GameBoard implements ActionListener {
             xFood = (byte) (1+rand.nextInt( gameField[0].length-3));
             yFood = (byte) (1+rand.nextInt( gameField.length-3));
         }
-        gameField[yFood][xFood] = gameField[yFood][xFood].changeToEatTile();
+        changeTile(gameField[yFood][xFood].changeToEatTile());
+    }
+
+    private void changeTile(FieldTileBase changeTo){
+        gameField[changeTo.getPosY()][changeTo.getPosX()] = changeTo;
+        changedTiles.add(changeTo);
     }
 
 
@@ -203,7 +201,7 @@ public class GameBoard implements ActionListener {
         return switch(userDifficulty){
             case 0 -> 200;
             case 2 -> 100;
-            case 3 -> 50;
+            case 3 -> 10;
             default -> 150;
         };
     }

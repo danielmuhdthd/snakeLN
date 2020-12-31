@@ -30,6 +30,7 @@ public class Snake {
     /**
      * Snakes moves one tile
      * @param nextTile Tile the snake moves to (already needs to be converted in a DeathTile)
+     * @return returns the tail death tile of the snake
      */
     public BackgroundTile move(DeathTile nextTile){
         snakeTiles.add(nextTile);
