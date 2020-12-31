@@ -109,7 +109,7 @@ public class HighscoreIO {
 
         List<Integer> subList = scores.stream().limit(10).collect(Collectors.toList());
         for (int i = 0; i < subList.size(); i++) {
-            String colonSpaces = i==9?":   ": ":     ";
+            String colonSpaces = i==9?":    ": ":     ";
             ret.append(i+1).append(colonSpaces).append(subList.get(i)).append(System.lineSeparator());
         }
         return ret.toString();
