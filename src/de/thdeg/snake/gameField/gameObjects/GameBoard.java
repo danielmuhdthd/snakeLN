@@ -187,6 +187,10 @@ public class GameBoard implements ActionListener {
         changeTile(gameField[yFood][xFood].changeToEatTile());
     }
 
+    /**
+     * Changes a tile into another tile
+     * @param changeTo the tile, to which was changed (overwrites the tile on its x and y position)
+     */
     private void changeTile(FieldTileBase changeTo){
         gameField[changeTo.getPosY()][changeTo.getPosX()] = changeTo;
         changedTiles.add(changeTo);
@@ -201,7 +205,7 @@ public class GameBoard implements ActionListener {
         return switch(userDifficulty){
             case 0 -> 200;
             case 2 -> 100;
-            case 3 -> 10;
+            case 3 -> 50;
             default -> 150;
         };
     }

@@ -51,9 +51,7 @@ public class UiFieldTranslator {
         field[firstPositionInShortArray+2] = tileColor.getBlue();
     }
 
-    /**
-     * Synchronizes the UI with the short array
-     */
+    /** Synchronizes the UI with the short array */
     private void synchronizeUi() {
         InternalLedGameThread.showImage(field);
     }

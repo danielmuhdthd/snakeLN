@@ -283,6 +283,13 @@ public class Countdown implements ActionListener {
         setColorToPosition(4, 22, color);
     }
 
+    /**
+     * Changes the color of a tile on a given position and marks it as "changed" by inserting it in the "changedTiles"
+     * list
+     * @param y y position of the tile changed
+     * @param x x position of the tile changed
+     * @param color color to which the tile is changed
+     */
     private void setColorToPosition(int y, int x, Color color) {
         FieldTileBase tile = gameField[absPosY + y][absPosX + x];
         changedTiles.add(tile);
