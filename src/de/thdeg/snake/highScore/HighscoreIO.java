@@ -25,7 +25,7 @@ public class HighscoreIO {
     public String refreshHighscore(String difficulty, int score){
 
         String path = Paths.get(getAppdataDir(), "Snake").toString();
-        String filepath = path + "\\" + difficulty + ".snake";
+        String filepath = path + File.separator + difficulty + ".snake";
 
         createDirectoryIfNotExists(path);
 
